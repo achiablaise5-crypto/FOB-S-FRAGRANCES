@@ -297,6 +297,33 @@ const heroIO = new IntersectionObserver(en => {
 }, { rootMargin: '50%' });
 heroIO.observe(hero);
 
+/* ---------- mobile nav drawer ---------- */
+const navBar = document.querySelector('.nav');
+const navToggle = navBar && navBar.querySelector('.nav-toggle');
+const navPanel = document.getElementById('nav-menu');
+if (navToggle && navPanel) {
+  const navMQ = window.matchMedia('(max-width: 860px)');
+  const navLinks = [...navPanel.querySelectorAll('a')];
+  const clearMenu = () => {
+    navBar.classList.remove('open');
+    navToggle.setAttribute('aria-expanded', 'false');
+    navToggle.setAttribute('aria-label', 'Menu');
+    navLinks.forEach(a => a.removeAttribute('tabindex'));
+  };
+  const setMenu = open => {
+    if (!navMQ.matches) { clearMenu(); return; }
+    navBar.classList.toggle('open', !!open);
+    navToggle.setAttribute('aria-expanded', String(!!open));
+    navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Menu');
+    navLinks.forEach(a => { a.tabIndex = open ? 0 : -1; });
+  };
+  navToggle.addEventListener('click', () => setMenu(!navBar.classList.contains('open')));
+  navLinks.forEach(a => a.addEventListener('click', () => setMenu(false)));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+  navMQ.addEventListener('change', () => setMenu(false));
+  setMenu(false);
+}
+
 /* ---------- motes (dust drifting through the dusk) ---------- */
 document.querySelectorAll('.motes').forEach(box => {
   for (let i = 0; i < 14; i++) {

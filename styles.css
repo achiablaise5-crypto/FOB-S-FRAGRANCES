@@ -21,7 +21,7 @@
 
 *,*::before,*::after{box-sizing:border-box}
 
-html{overflow-x:hidden;overflow-x:clip;scroll-behavior:smooth}
+html{overflow-x:hidden;overflow-x:clip;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 
 body{
   overflow-x:hidden;overflow-x:clip;
@@ -54,9 +54,21 @@ a:focus-visible,button:focus-visible,.bottle-card:focus-visible,summary:focus-vi
   position:fixed;top:0;left:0;right:0;z-index:60;
   display:flex;align-items:center;justify-content:space-between;gap:1rem;
   padding:1.05rem clamp(1.1rem,4vw,3.5rem);
+}
+.nav::before{
+  content:"";position:absolute;inset:0;z-index:-1;
   background:linear-gradient(rgba(22,17,12,.78),rgba(22,17,12,0));
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
 }
+.nav-toggle{
+  display:none;width:44px;height:44px;
+  background:transparent;border:1px solid var(--accent-muted);border-radius:12px;
+  flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  cursor:pointer;
+}
+.nav-toggle span{width:20px;height:2px;border-radius:2px;background:var(--accent);transition:transform .3s var(--ease),opacity .3s var(--ease)}
+.nav.open .nav-toggle span:first-child{transform:translateY(4px) rotate(45deg)}
+.nav.open .nav-toggle span:last-child{transform:translateY(-4px) rotate(-45deg)}
 .nav-mark{
   font-family:"Space Mono",monospace;font-size:.8rem;letter-spacing:.3em;
   text-decoration:none;color:var(--text-primary);text-transform:uppercase;
@@ -71,12 +83,13 @@ a:focus-visible,button:focus-visible,.bottle-card:focus-visible,summary:focus-vi
 }
 @media (pointer:coarse){
   .nav ul{gap:.8rem;flex-wrap:wrap;justify-content:flex-end}
+  a,button,summary,.bottle-card{-webkit-tap-highlight-color:transparent}
 }
 
 /* ---------- hero stage ---------- */
 .hero{height:400vh;position:relative;scroll-margin-top:0}
 .stage{
-  position:sticky;top:0;height:100vh;overflow:hidden;
+  position:sticky;top:0;height:100vh;height:100dvh;overflow:hidden;
   background:radial-gradient(ellipse 120% 100% at 50% 30%,#2a1d0f 0%,#1a130b 45%,#0e0a06 100%);
   isolation:isolate;
 }
@@ -307,6 +320,7 @@ h2{
   margin:3rem auto 0;max-width:440px;text-align:center;
   border:1px solid var(--accent-muted);border-radius:24px;
   padding:2.6rem 2rem;position:relative;cursor:pointer;user-select:none;
+  -webkit-touch-callout:none;touch-action:manipulation;
   background:radial-gradient(ellipse 100% 90% at 50% 40%,rgba(217,164,65,.1),transparent 70%);
   transition:border-color .5s var(--ease);
 }
@@ -409,7 +423,7 @@ footer .disc{font-size:.78rem;opacity:.75;margin-top:.6rem}
        (orientation:portrait) and (pointer:coarse),
        (orientation:landscape) and (pointer:coarse) and (max-height:560px),
        (prefers-reduced-motion:reduce){
-  .hero{height:100vh}
+  .hero{height:100vh;height:100svh}
   .bands{display:none}
   .static-hero{display:flex}
   .motes{opacity:.5}
@@ -443,4 +457,26 @@ body.paused *,body.paused *::before,body.paused *::after{animation-play-state:pa
   .stills-grid{grid-template-columns:repeat(2,1fr)}
   .quote + .quote{margin-left:0}
   .pourline{display:none}
+}
+
+/* ---------- mobile nav drawer ---------- */
+@media (max-width:860px){
+  .nav{
+    padding-top:.9rem;padding-top:calc(.9rem + env(safe-area-inset-top));
+    padding-bottom:.9rem;padding-bottom:calc(.9rem + env(safe-area-inset-bottom,0px));
+  }
+  .nav-toggle{display:flex}
+  .nav ul{
+    position:fixed;top:0;right:0;bottom:0;z-index:60;
+    min-width:min(78vw,320px);max-width:84vw;
+    margin:0;flex-direction:column;align-items:flex-start;justify-content:center;gap:1.8rem;
+    padding:6rem 2.4rem calc(3rem + env(safe-area-inset-bottom,0px));
+    list-style:none;
+    background:rgba(18,13,8,.97);
+    border-left:1px solid rgba(217,164,65,.16);
+    transform:translateX(102%);transition:transform .45s var(--ease);
+  }
+  .nav.open ul{transform:translateX(0)}
+  .nav a{font-size:.92rem;letter-spacing:.04em}
+  .nav .nav-cta{font-size:.74rem}
 }
