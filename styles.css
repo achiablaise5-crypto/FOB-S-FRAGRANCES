@@ -221,7 +221,7 @@ a:focus-visible,button:focus-visible,.bottle-card:focus-visible,summary:focus-vi
 .static-hero{
   position:absolute;inset:0;z-index:5;display:none;
   flex-direction:column;align-items:center;justify-content:center;text-align:center;
-  padding:0 6vw;color:var(--text-primary);
+  padding:0 6vw;color:var(--text-primary);text-shadow:var(--tshadow);
 }
 .static-hero h1{
   font-family:"Cormorant Garamond",serif;font-weight:500;

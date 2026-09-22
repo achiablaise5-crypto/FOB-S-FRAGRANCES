@@ -3,6 +3,8 @@
 /* ---------- constants (wire live URLs when the assets land) ---------- */
 const VIDEO_URL = 'assets/hero-scrub.mp4';
 const VIDEO_BYTES = 6800018;   // real byte size once encoded; fallback when Content-Length is missing
+const MOBILE_VIDEO_URL = 'assets/hero-mobile.mp4';
+const MOBILE_VIDEO_BYTES = 1574051;
 const POSTER_URL = 'assets/hero-poster.jpg';
 
 const el = id => document.getElementById(id);
@@ -83,6 +85,7 @@ const GATES = [
 ];
 let scrubOn = false;
 let heroInitOnce = false;
+let staticAtInit = false;
 let posterEl = document.querySelector('.poster');
 let loadK = 0, loadRaf = null, loadStart = 0;
 
@@ -101,12 +104,14 @@ function initHeroOnce() {
   if (heroInitOnce) return;
   heroInitOnce = true;
   posterEl.style.backgroundImage = "url('" + POSTER_URL + "')";
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return; // poster only
+  staticAtInit = GATES.some(q => matchMedia(q).matches);
   let started = false;
   const startBlobFetch = () => {
     if (started) return;
     started = true;
     stage.classList.add('streaming');
-    loadHeroBlob().catch(failVideo);
+    loadHeroBlob(staticAtInit ? MOBILE_VIDEO_URL : VIDEO_URL, staticAtInit).catch(failVideo);
   };
   const img = new Image();
   img.onload = startBlobFetch;
@@ -115,12 +120,12 @@ function initHeroOnce() {
   setTimeout(startBlobFetch, 4000);
 }
 
-async function loadHeroBlob() {
+async function loadHeroBlob(url, staticMode) {
   const ctrl = new AbortController();
   let watchdog = setTimeout(() => ctrl.abort(), 20000);
-  const res = await fetch(VIDEO_URL, { priority: 'low', signal: ctrl.signal });
+  const res = await fetch(url, { priority: 'low', signal: ctrl.signal });
   if (!res.ok) throw new Error('HTTP ' + res.status);
-  const total = Number(res.headers.get('Content-Length')) || VIDEO_BYTES;
+  const total = Number(res.headers.get('Content-Length')) || (staticMode ? MOBILE_VIDEO_BYTES : VIDEO_BYTES);
   const reader = res.body.getReader();
   const chunks = [];
   let got = 0, lastRing = 0;
@@ -144,7 +149,13 @@ async function loadHeroBlob() {
   video.src = URL.createObjectURL(new Blob(chunks));
   video.load();
   video.addEventListener('canplay', () => {
-    requestSeek(heroProgress() * video.duration);
+    if (staticMode) {
+      video.loop = true;
+      video.muted = true;
+      video.play().catch(() => {});
+    } else {
+      requestSeek(heroProgress() * video.duration);
+    }
     stage.classList.add('video-ready');
   }, { once: true });
 }
@@ -283,7 +294,7 @@ function applyHeroMode() {
   const staticMode = GATES.some(q => matchMedia(q).matches);
   document.querySelector('.bands').setAttribute('aria-hidden', String(staticMode));
   document.querySelector('.static-hero').setAttribute('aria-hidden', String(!staticMode));
-  if (staticMode) disableScrub();
+  if (staticMode) { disableScrub(); initHeroOnce(); }
   else enableScrub();
 }
 const MQLS = GATES.map(q => matchMedia(q));
